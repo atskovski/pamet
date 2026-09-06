@@ -81,7 +81,6 @@ test.describe('Pamet plan entitlement boundaries', () => {
     expect(audit.missing).toEqual([]);
 
     await page.locator('.tab[data-tab="settings"]').click();
-    await page.waitForFunction(() => !!window.PametFreePlanAccess);
     const row = page.locator('#standardVisitBriefSetting');
     await expect(row).toBeVisible();
     await expect(row).toContainText('Standard Visit Brief');
