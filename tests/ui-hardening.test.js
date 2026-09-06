@@ -11,6 +11,8 @@ const accountSwitch = fs.readFileSync('js/account-switch.js', 'utf8');
 const feedbackUi = fs.readFileSync('js/feedback.js', 'utf8');
 const releaseCss = fs.readFileSync('css/login-experience.css', 'utf8');
 const mobileCss = fs.readFileSync('css/mobile.css', 'utf8');
+const logExperienceCss = fs.readFileSync('css/log-experience.css', 'utf8');
+const productClarityCss = fs.readFileSync('css/product-clarity.css', 'utf8');
 const secureServer = fs.readFileSync('secure-server.js', 'utf8');
 const edgeAccount = fs.readFileSync('lib/edge-account.js', 'utf8');
 const qrSource = fs.readFileSync('js/qr-sharing.js', 'utf8');
@@ -98,6 +100,20 @@ test('mobile layout covers safe areas, narrow phones, and input zoom prevention'
   assert.match(mobileCss, /font-size:16px!important/);
   assert.match(mobileCss, /\.app-shell[\s\S]*width:100vw!important/);
   assert.match(mobileCss, /orientation:landscape/);
+});
+
+test('logging milestone hero scales only for phone-class touch layouts', () => {
+  assert.match(logExperienceCss, /hover:none/);
+  assert.match(logExperienceCss, /pointer:coarse/);
+  assert.match(logExperienceCss, /\.logging-current-tier\{[\s\S]*border:0;[\s\S]*background:transparent;/);
+  assert.match(logExperienceCss, /\.logging-current-badge\{[\s\S]*width:4rem;/);
+  assert.match(logExperienceCss, /orientation:landscape/);
+});
+
+test('profile shortcut suppresses icon motion and the legacy hydration flash', () => {
+  assert.match(productClarityCss, /\.profile-icon-btn[\s\S]*animation:none!important;[\s\S]*transition:none!important;/);
+  assert.match(productClarityCss, /svg\.icon:not\(\[data-pamet-icon-name="profiles"\]\)[\s\S]*visibility:hidden/);
+  assert.match(productClarityCss, /data-pamet-icon-name="profiles"\][\s\S]*visibility:visible/);
 });
 
 test('script and style CSP no longer permit unsafe inline execution or attributes', () => {
