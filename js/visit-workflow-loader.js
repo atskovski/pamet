@@ -47,6 +47,11 @@
     return actionsPending;
   }
 
+  function handleModalChanges(){
+    closeSavedAppointmentWorkspace();
+    if(document.querySelector('#careAppointmentList'))loadAppointmentActions().catch(()=>{});
+  }
+
   window.PametVisitWorkflowLoader={load,labelVisitSequence,loadAppointmentActions};
   document.addEventListener('pamet:settings-rendered',labelVisitSequence);
   document.addEventListener('click',event=>{
@@ -64,8 +69,8 @@
     if(event.target.closest?.('[data-nav="report"],[data-phase2="prep"]'))load().catch(()=>{});
   },true);
 
-  const modalObserver=new MutationObserver(closeSavedAppointmentWorkspace);
+  const modalObserver=new MutationObserver(handleModalChanges);
   modalObserver.observe(document.body,{childList:true,subtree:true});
   labelVisitSequence();
-  closeSavedAppointmentWorkspace();
+  handleModalChanges();
 })();
