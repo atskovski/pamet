@@ -70,19 +70,12 @@
     const hasSavedAccount = !!A?.hasAccount?.();
     switcher.hidden = hasSavedAccount;
     createLink.hidden = hasSavedAccount;
-    const email = loginForm.querySelector("#loginEmail");
-    const savedEmail = A?.getUser?.()?.email;
-    if (hasSavedAccount && email && savedEmail && !email.value.trim()) email.value = savedEmail;
     moveAuthError(loginForm);
 
     if (createLink.dataset.pametAuthTarget !== "true") {
       createLink.dataset.pametAuthTarget = "true";
       createLink.addEventListener("click", () => queueMicrotask(() => moveAuthError(registerForm)));
-      registerForm.querySelector("#showLogin")?.addEventListener("click", () => {
-        const enteredEmail = registerForm.querySelector("#regEmail")?.value.trim();
-        if (enteredEmail) email.value = enteredEmail;
-        queueMicrotask(() => moveAuthError(loginForm));
-      });
+      registerForm.querySelector("#showLogin")?.addEventListener("click", () => queueMicrotask(() => moveAuthError(loginForm)));
     }
     ensureRememberMe();
   }
@@ -111,12 +104,5 @@
   window.addEventListener("pamet:logout", rotateScene);
   window.addEventListener("pamet:logout-all", ensureRegistrationEntry);
   window.addEventListener("pamet:account-deleted", ensureRegistrationEntry);
-  window.addEventListener("pamet:registered", () => setTimeout(() => {
-    const toast = document.querySelector("#toast");
-    if (!toast || !/Account created/i.test(toast.textContent)) return;
-    toast.textContent = "Account created — you’re signed in ✓";
-    toast.setAttribute("role", "status");
-    toast.setAttribute("aria-live", "polite");
-  }, 0));
   rotateScene();
 })();
