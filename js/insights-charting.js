@@ -394,7 +394,6 @@
     return `<g class="chart-reference-context" aria-label="Typical range based on this selected window">
       <rect class="chart-reference-band" x="${pad.left}" y="${yTop.toFixed(1)}" width="${plotW.toFixed(1)}" height="${height.toFixed(1)}" rx="7"/>
       <line class="chart-reference-mean" x1="${pad.left}" y1="${meanY.toFixed(1)}" x2="${(pad.left+plotW).toFixed(1)}" y2="${meanY.toFixed(1)}"/>
-      <text class="chart-reference-label" x="${(pad.left+10).toFixed(1)}" y="${Math.max(pad.top+13,yTop+14).toFixed(1)}">Typical range in this window</text>
     </g>`;
   }
 
