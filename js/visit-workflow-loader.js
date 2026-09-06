@@ -73,12 +73,19 @@
     button?.closest('.care-saved-visit')?.remove();
     if(!list.querySelector('.care-saved-visit'))list.innerHTML='<div class="care-sync-help"><strong>No visits saved yet</strong><p>Saved appointments appear here.</p></div>';
   }
+  function purgeLocal(localId,serverId=''){
+    writeLocal(readLocal().filter(value=>String(value.localId)!==String(localId)&&(!serverId||String(value.serverId)!==String(serverId))));
+    removeRenderedRow(localId);
+  }
+  function settleRemoval(localId,serverId=''){
+    purgeLocal(localId,serverId);
+    [650,1700].forEach(delay=>setTimeout(()=>purgeLocal(localId,serverId),delay));
+  }
   async function removeSavedVisit(localId,{afterEdit=false}={}){
     const item=await savedAppointment(localId);if(!item)return false;
     const serverId=item.serverId||item.id||'';
     if(serverId)await appointmentApi(`/api/appointments/${encodeURIComponent(serverId)}`,{method:'DELETE'});
-    writeLocal(readLocal().filter(value=>String(value.localId)!==String(localId)&&(!serverId||String(value.serverId)!==String(serverId))));
-    removeRenderedRow(localId);
+    settleRemoval(localId,serverId);
     if(!afterEdit)setCareStatus('Saved visit removed.','success');
     return true;
   }
