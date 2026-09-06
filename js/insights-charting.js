@@ -528,11 +528,15 @@
     const values = metricValues(buckets,metric,symptom).primary;
     const latest = latestFinite(values);
     const windowAverage = average(values);
+    const headline = metric === 'frequency' ? windowAverage : latest;
+    const context = metric === 'frequency'
+      ? `Latest logged day ${formatMetric(metric,latest)}`
+      : `Window avg ${formatMetric(metric,windowAverage)}`;
     const delta = deltaCopy(metric,splitWindowDelta(values));
     return `<article class="basic-metric-card" data-basic-metric="${metric}">
-      <div class="basic-metric-card-head"><div><span>${escapeHtml(def.short)}</span><small>${escapeHtml(def.scope)}</small></div><strong>${escapeHtml(formatMetric(metric,latest))}</strong></div>
+      <div class="basic-metric-card-head"><div><span>${escapeHtml(def.short)}</span><small>${escapeHtml(def.scope)}</small></div><strong>${escapeHtml(formatMetric(metric,headline))}</strong></div>
       ${sparklineMarkup(values,metric,chartType)}
-      <div class="basic-metric-card-foot"><span class="basic-delta ${delta.className}"><b aria-hidden="true">${delta.icon}</b>${escapeHtml(delta.text)}</span><span>Window avg ${escapeHtml(formatMetric(metric,windowAverage))}</span></div>
+      <div class="basic-metric-card-foot"><span class="basic-delta ${delta.className}"><b aria-hidden="true">${delta.icon}</b>${escapeHtml(delta.text)}</span><span>${escapeHtml(context)}</span></div>
     </article>`;
   }
 
@@ -593,7 +597,7 @@
     return `<div class="advanced-comparison-card" data-comparison="${item.key}">
       <div class="advanced-comparison-title"><span>${escapeHtml(item.label)}</span><strong>${escapeHtml(differenceCopy)} difference</strong></div>
       <div class="comparison-values"><span><b>${escapeHtml(selectedLabel)}</b>${escapeHtml(value(selected))}</span><span><b>${escapeHtml(baselineLabel)}</b>${escapeHtml(value(baseline))}</span></div>
-      <div class="comparison-delta-track" role="img" aria-label="${escapeHtml(item.label)} difference ${escapeHtml(differenceCopy)}"><span class="comparison-delta-zero" aria-hidden="true"></span>${finite(difference) ? `<span class="comparison-delta-bar ${difference >= 0 ? 'positive' : 'negative'}" style="left:${left.toFixed(2)}%;width:${magnitude.toFixed(2)}%" aria-hidden="true"></span>` : ''}</div>
+      <div class="comparison-delta-track" role="img" aria-label="${escapeHtml(item.label)} difference ${escapeHtml(differenceCopy)}"><svg class="comparison-delta-svg" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><line class="comparison-delta-zero" x1="50" y1="0" x2="50" y2="10"/>${finite(difference) ? `<rect class="comparison-delta-bar ${difference >= 0 ? 'positive' : 'negative'}" x="${left.toFixed(2)}" y="2" width="${magnitude.toFixed(2)}" height="6" rx="3"/>` : ''}</svg></div>
       <div class="comparison-delta-axis"><span>Lower</span><span>Baseline</span><span>Higher</span></div>
       <small>${escapeHtml(note)}</small>
     </div>`;
