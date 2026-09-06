@@ -2,7 +2,7 @@
 (()=>{
   'use strict';
   if(window.PametVisitWorkflowLoader)return;
-  let pending=null,actionsPending=null;
+  let pending=null,actionsStarted=false;
 
   function labelVisitSequence(){
     const prep=document.querySelector('[data-phase2="prep"]');
@@ -33,26 +33,21 @@
     return pending;
   }
 
-  function loadAppointmentActions(){
-    if(window.PametAppointmentWorkspaceActions)return Promise.resolve(window.PametAppointmentWorkspaceActions);
-    if(actionsPending)return actionsPending;
-    actionsPending=new Promise((resolve,reject)=>{
-      const script=document.createElement('script');
-      script.src='/assets/appointment-workspace-actions.js?v=1695-visit-actions1';
-      script.async=true;
-      script.addEventListener('load',()=>window.PametAppointmentWorkspaceActions?resolve(window.PametAppointmentWorkspaceActions):reject(new Error('Saved visit actions did not initialize.')),{once:true});
-      script.addEventListener('error',()=>reject(new Error('Saved visit actions could not be loaded.')),{once:true});
-      document.head.appendChild(script);
-    }).catch(error=>{actionsPending=null;throw error});
-    return actionsPending;
+  function ensureAppointmentActions(){
+    if(actionsStarted||window.PametAppointmentWorkspaceActions)return;
+    actionsStarted=true;
+    const script=document.createElement('script');
+    script.src='/assets/appointment-workspace-actions.js?v=1695-visit-actions1';
+    script.async=true;
+    document.head.appendChild(script);
   }
 
   function handleModalChanges(){
     closeSavedAppointmentWorkspace();
-    if(document.querySelector('#careAppointmentList'))loadAppointmentActions().catch(()=>{});
+    if(document.querySelector('#careAppointmentList'))ensureAppointmentActions();
   }
 
-  window.PametVisitWorkflowLoader={load,labelVisitSequence,loadAppointmentActions};
+  window.PametVisitWorkflowLoader={load,labelVisitSequence};
   document.addEventListener('pamet:settings-rendered',labelVisitSequence);
   document.addEventListener('click',event=>{
     const email=event.target.closest?.('#emailReport');
@@ -64,8 +59,6 @@
       else load().then(open).catch(()=>{});
       return;
     }
-    const prep=event.target.closest?.('[data-phase2="prep"]');
-    if(prep)loadAppointmentActions().catch(()=>{});
     if(event.target.closest?.('[data-nav="report"],[data-phase2="prep"]'))load().catch(()=>{});
   },true);
 
