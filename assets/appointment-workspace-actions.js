@@ -9,6 +9,13 @@
   const readLocal=()=>{try{const value=JSON.parse(localStorage.getItem(savedKey())||'[]');return Array.isArray(value)?value:[]}catch{return[]}};
   const writeLocal=items=>{try{localStorage.setItem(savedKey(),JSON.stringify(items.slice(0,100)))}catch{}};
 
+  function installStyles(){
+    if($('#pametSavedVisitActionStyles'))return;
+    const style=document.createElement('style');style.id='pametSavedVisitActionStyles';
+    style.textContent='.care-saved-manage{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:5px;min-height:18px;margin-bottom:1px;color:var(--text-secondary);font-size:11px;line-height:1}.care-saved-manage-btn{appearance:none;border:0;background:transparent;color:var(--brand-primary,#0f3d3e);font:inherit;font-weight:800;line-height:1;padding:3px 0;cursor:pointer}.care-saved-manage-btn:hover{text-decoration:underline;text-underline-offset:2px}.care-saved-manage-btn.danger{color:var(--rose,#9b4850)}.care-saved-manage-btn:focus-visible{outline:2px solid var(--brand-primary,#0f3d3e);outline-offset:2px;border-radius:3px}@media(max-width:560px){.care-saved-manage{justify-content:flex-start}}';
+    document.head.appendChild(style);
+  }
+
   async function api(path,options={}){
     const baseHeaders={'Content-Type':'application/json',...(options.headers||{})};
     let response=await fetch(path,{credentials:'same-origin',cache:'no-store',...options,headers:baseHeaders});
@@ -118,6 +125,7 @@
     removeSavedVisit(remove.dataset.savedVisitRemove).catch(error=>{remove.disabled=false;setStatus(error.message||'The saved visit could not be removed.','error')});
   },true);
 
+  installStyles();
   const observer=new MutationObserver(enhance);observer.observe(document.body,{childList:true,subtree:true});enhance();
   window.PametAppointmentWorkspaceActions=Object.freeze({enhance});
 })();
