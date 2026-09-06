@@ -40,7 +40,7 @@
     const report=S.report();
     return {
       version:'standard-1.0',generatedAt:new Date().toISOString(),profileName:S.activeProfile?.name||'Pamet profile',profileId:S.activeProfile?.id||'primary',rangeLabel:report.rangeLabel||'Recorded history',
-      overview:report.overview||[],breakdown:report.breakdown||[],medications:report.medications||[],notes:(report.notes||[]).slice(0,12),
+      overview:report.overview||[],breakdown:report.breakdown||[],medications:report.medications||[],notes:[],
       patterns:(report.patterns||[]).slice(0,12).map(item=>({title:item.title||'Pamet observation',detail:item.detail||''}))
     };
   }

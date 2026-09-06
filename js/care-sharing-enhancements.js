@@ -171,6 +171,7 @@
   }
 
   function installButtons() {
+    $('#standardVisitBriefSetting .care-access-action')?.classList.add('btn','btn-ghost');
     const pairs = [
       ['#setCaregiver','caregiver','Share securely'],
       ['#setPrimaryCare','provider','Create visit brief']

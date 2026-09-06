@@ -10,6 +10,9 @@ const authUi = fs.readFileSync('js/auth.js', 'utf8');
 const accountSwitch = fs.readFileSync('js/account-switch.js', 'utf8');
 const feedbackUi = fs.readFileSync('js/feedback.js', 'utf8');
 const productClarity = fs.readFileSync('js/product-clarity.js', 'utf8');
+const appUi = fs.readFileSync('js/app.js', 'utf8');
+const careSharingUi = fs.readFileSync('js/care-sharing-enhancements.js', 'utf8');
+const visitWorkflow = fs.readFileSync('js/visit-workflow.js', 'utf8');
 const releaseCss = fs.readFileSync('css/login-experience.css', 'utf8');
 const mobileCss = fs.readFileSync('css/mobile.css', 'utf8');
 const logExperienceCss = fs.readFileSync('css/log-experience.css', 'utf8');
@@ -113,6 +116,18 @@ test('logging milestone hero scales only for phone-class touch layouts', () => {
 test('profile shortcut renders its final static registry icon without a hydration swap', () => {
   assert.match(productClarity, /button\.innerHTML = window\.PametIcons\.svg\('profiles'\)/);
   assert.doesNotMatch(productClarity, /PROFILE_ICON/);
+});
+
+test('Standard Visit Brief matches care-action styling and excludes patient notes', () => {
+  assert.match(careSharingUi, /#standardVisitBriefSetting \.care-access-action/);
+  assert.match(careSharingUi, /classList\.add\('btn','btn-ghost'\)/);
+  const reportView = appUi.match(/function renderReport\(\)[\s\S]*?function rowHtml/)[0];
+  const reportPdf = appUi.match(/function downloadPdf\(\)[\s\S]*?\/\/ ={10,}/)[0];
+  const standardEmail = visitWorkflow.match(/function standardSnapshot\(\)[\s\S]*?function briefPayload/)[0];
+  assert.doesNotMatch(reportView, /r\.notes|Patient notes/);
+  assert.doesNotMatch(reportPdf, /r\.notes|Patient notes/);
+  assert.match(standardEmail, /notes:\[\]/);
+  assert.doesNotMatch(standardEmail, /report\.notes/);
 });
 
 test('script and style CSP no longer permit unsafe inline execution or attributes', () => {

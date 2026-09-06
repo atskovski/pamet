@@ -197,7 +197,6 @@
       tags = e.symptoms.map((s) => `<span class="pill rose">${esc(s)}</span>`).join("");
     }
     tags += `<span class="pill neutral">Sleep ${e.sleepHours}h</span><span class="pill neutral">Stress ${Math.round(e.stressLevel)}/10</span>`;
-
     let dots = "";
     const filled = Math.round(e.severity / 2);
     for (let i = 0; i < 5; i++) dots += `<span class="${i < filled ? "on" : ""}"></span>`;
@@ -343,7 +342,6 @@
           return `<div class="report-bullet"><span class="bullet" style="color:${c}">•</span><span>${esc(p.title)} (${Math.round(p.confidence*100)}% confidence): ${esc(p.detail)}</span></div>`;
         }).join("")) : ""}
         ${r.medications.length ? reportSection("Medications noted", r.medications.map(rowHtml).join("")) : ""}
-        ${r.notes.length ? reportSection("Patient notes (selected)", r.notes.map((n) => `<div class="report-quote">"${esc(n.notes)}" — ${esc(n.date)}</div>`).join("")) : ""}
       </div>`;
   }
 
@@ -419,7 +417,6 @@
       ${r.breakdown.length ? `<h2>Symptom breakdown</h2><table>${rows(r.breakdown)}</table>` : ""}
       ${r.patterns.length ? `<h2>Pamet observations</h2>` + r.patterns.map((p) => `<div class="b">• <strong>${esc(p.title)} (${Math.round(p.confidence*100)}%)</strong> — ${esc(p.detail)}</div>`).join("") : ""}
       ${r.medications.length ? `<h2>Medications noted</h2><table>${rows(r.medications)}</table>` : ""}
-      ${r.notes.length ? `<h2>Patient notes</h2>` + r.notes.map((n) => `<div class="q">"${esc(n.notes)}" — ${esc(n.date)}</div>`).join("") : ""}
       </body></html>`);
     w.document.close();
     setTimeout(() => { w.focus(); w.print(); }, 350);
