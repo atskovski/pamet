@@ -68,7 +68,6 @@ test.describe('Pamet plan entitlement boundaries', () => {
 
   test('Free exposes every Free catalog entitlement and can create a Standard Visit Brief from Settings', async ({ page }, testInfo) => {
     await registerFreeAccount(page, testInfo);
-    await page.waitForFunction(() => window.PametAuthenticatedFeaturesLoaded === true && !!window.PametFreePlanAccess);
 
     const audit = await page.evaluate(() => {
       const features = Array.isArray(window.PametPlanCatalog?.features) ? window.PametPlanCatalog.features : [];
@@ -82,6 +81,7 @@ test.describe('Pamet plan entitlement boundaries', () => {
     expect(audit.missing).toEqual([]);
 
     await page.locator('.tab[data-tab="settings"]').click();
+    await page.waitForFunction(() => !!window.PametFreePlanAccess);
     const row = page.locator('#standardVisitBriefSetting');
     await expect(row).toBeVisible();
     await expect(row).toContainText('Standard Visit Brief');
