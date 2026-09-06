@@ -5,6 +5,8 @@
   const A = window.PametAuth;
   if (!welcome) return;
 
+  let authSuccessTimer;
+
   function ensureRememberMe() {
     const loginForm = document.querySelector("#loginForm");
     const submit = loginForm?.querySelector('button[type="submit"]');
@@ -44,6 +46,125 @@
     if (secure && A?.isSecure) secure.textContent = "🔒 Sign-in uses a secure session. Pamet does not save your plain-text password in the browser.";
   }
 
+  function setHidden(element, hidden) {
+    if (element && element.hidden !== hidden) element.hidden = hidden;
+  }
+
+  function applyRegistrationVisibility(loginForm, switcher, createLink) {
+    const hasSavedAccount = !!A?.hasAccount?.();
+    const showCreateAccount = !hasSavedAccount;
+    setHidden(switcher, !showCreateAccount);
+    setHidden(createLink, !showCreateAccount);
+
+    if (hasSavedAccount) {
+      const saved = A?.getUser?.();
+      const email = loginForm.querySelector("#loginEmail");
+      if (saved?.email && email && !email.value.trim()) email.value = saved.email;
+    }
+  }
+
+  function ensureFormError(form) {
+    if (!form) return null;
+    let error = form.querySelector(".form-error");
+    if (!error) {
+      error = document.createElement("p");
+      error.className = "form-error";
+      error.setAttribute("role", "alert");
+      error.hidden = true;
+      const submit = form.querySelector('button[type="submit"]');
+      if (submit) submit.insertAdjacentElement("beforebegin", error);
+      else form.appendChild(error);
+    }
+    return error;
+  }
+
+  function clearFormError(form) {
+    const error = form?.querySelector(".form-error");
+    if (!error) return;
+    error.textContent = "";
+    error.hidden = true;
+  }
+
+  function setSubmitting(form, submitting, pendingLabel) {
+    if (!form) return;
+    const submit = form.querySelector('button[type="submit"]');
+    if (!submit) return;
+    if (!submit.dataset.pametDefaultLabel) submit.dataset.pametDefaultLabel = submit.textContent.trim();
+    form.setAttribute("aria-busy", submitting ? "true" : "false");
+    submit.disabled = submitting;
+    submit.textContent = submitting ? pendingLabel : submit.dataset.pametDefaultLabel;
+  }
+
+  function ensureSubmissionState(form, pendingLabel) {
+    if (!form || form.dataset.pametSubmitGuard === "true") return;
+    form.dataset.pametSubmitGuard = "true";
+    form.addEventListener("submit", (event) => {
+      if (form.getAttribute("aria-busy") === "true") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      setSubmitting(form, true, pendingLabel);
+    }, true);
+  }
+
+  function registrationErrorMessage(message) {
+    if (message === "An account already exists for this email.") return "An account already exists for this email. Use Log in below instead.";
+    if (message === "An account already exists on this device. Log in or reset its password.") return "This Pamet account is already saved in this browser. Log in instead.";
+    return message;
+  }
+
+  function ensureErrorRouting() {
+    const loginForm = document.querySelector("#loginForm");
+    const registerForm = document.querySelector("#registerForm");
+    if (!loginForm || !registerForm) return;
+
+    const loginError = ensureFormError(loginForm);
+    const registerError = ensureFormError(registerForm);
+    if (!loginError || !registerError || loginError.dataset.pametAuthErrorRouter === "true") return;
+    loginError.dataset.pametAuthErrorRouter = "true";
+
+    const syncErrors = () => {
+      if (!registerForm.hidden) {
+        const message = registrationErrorMessage(loginError.textContent.trim());
+        registerError.textContent = message;
+        registerError.hidden = !message || loginError.hidden;
+        if (message) setSubmitting(registerForm, false, "Creating account…");
+      } else if (loginError.textContent.trim() && !loginError.hidden) {
+        setSubmitting(loginForm, false, "Signing in…");
+      }
+    };
+
+    const observer = new MutationObserver(syncErrors);
+    observer.observe(loginError, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
+    syncErrors();
+  }
+
+  function announceAccountCreated() {
+    document.querySelector("#pametAuthSuccess")?.remove();
+    const notice = document.createElement("div");
+    notice.id = "pametAuthSuccess";
+    notice.className = "pamet-notification";
+    notice.setAttribute("role", "status");
+    notice.setAttribute("aria-live", "polite");
+    notice.setAttribute("aria-atomic", "true");
+
+    const title = document.createElement("strong");
+    title.textContent = "Account created";
+    const detail = document.createElement("span");
+    detail.textContent = "Your Pamet account is ready and you’re signed in.";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.setAttribute("aria-label", "Dismiss account confirmation");
+    close.textContent = "×";
+    close.addEventListener("click", () => notice.remove());
+    notice.append(title, detail, close);
+    document.body.appendChild(notice);
+
+    clearTimeout(authSuccessTimer);
+    authSuccessTimer = setTimeout(() => notice.remove(), 5500);
+  }
+
   function ensureRegistrationEntry() {
     const loginForm = document.querySelector("#loginForm");
     const registerForm = document.querySelector("#registerForm");
@@ -69,6 +190,8 @@
       switcher.appendChild(createLink);
       createLink.addEventListener("click", (event) => {
         event.preventDefault();
+        clearFormError(loginForm);
+        clearFormError(registerForm);
         registerForm.reset();
         loginForm.hidden = true;
         registerForm.hidden = false;
@@ -77,11 +200,40 @@
       createLink.textContent = "Create an account";
     }
 
-    switcher.hidden = false;
-    switcher.removeAttribute("hidden");
-    createLink.hidden = false;
-    createLink.removeAttribute("hidden");
     createLink.setAttribute("aria-label", "Create a new Pamet account");
+    applyRegistrationVisibility(loginForm, switcher, createLink);
+
+    if (switcher.dataset.pametRegistrationStateGuard !== "true") {
+      switcher.dataset.pametRegistrationStateGuard = "true";
+      const registrationStateGuard = new MutationObserver(() => applyRegistrationVisibility(loginForm, switcher, createLink));
+      registrationStateGuard.observe(switcher, { attributes: true, attributeFilter: ["hidden"] });
+      registrationStateGuard.observe(createLink, { attributes: true, attributeFilter: ["hidden"] });
+    }
+
+    if (createLink.dataset.pametAuthClearErrors !== "true") {
+      createLink.dataset.pametAuthClearErrors = "true";
+      createLink.addEventListener("click", () => {
+        clearFormError(loginForm);
+        clearFormError(registerForm);
+      });
+    }
+
+    const loginLink = registerForm.querySelector("#showLogin");
+    if (loginLink && loginLink.dataset.pametAuthLoginLink !== "true") {
+      loginLink.dataset.pametAuthLoginLink = "true";
+      loginLink.addEventListener("click", () => {
+        const registrationEmail = registerForm.querySelector("#regEmail")?.value.trim();
+        const loginEmail = loginForm.querySelector("#loginEmail");
+        if (registrationEmail && loginEmail) loginEmail.value = registrationEmail;
+        clearFormError(loginForm);
+        clearFormError(registerForm);
+        setSubmitting(registerForm, false, "Creating account…");
+      });
+    }
+
+    ensureSubmissionState(loginForm, "Signing in…");
+    ensureSubmissionState(registerForm, "Creating account…");
+    ensureErrorRouting();
     ensureRememberMe();
   }
 
@@ -107,6 +259,21 @@
   ensureRegistrationEntry();
   queueMicrotask(ensureRegistrationEntry);
   window.addEventListener("pageshow", ensureRegistrationEntry);
-  window.addEventListener("pamet:logout", rotateScene);
+  window.addEventListener("pamet:logout", () => {
+    setSubmitting(document.querySelector("#loginForm"), false, "Signing in…");
+    rotateScene();
+  });
+  window.addEventListener("pamet:logout-all", ensureRegistrationEntry);
+  window.addEventListener("pamet:account-deleted", () => {
+    setSubmitting(document.querySelector("#loginForm"), false, "Signing in…");
+    setSubmitting(document.querySelector("#registerForm"), false, "Creating account…");
+    ensureRegistrationEntry();
+  });
+  window.addEventListener("pamet:login", () => setSubmitting(document.querySelector("#loginForm"), false, "Signing in…"));
+  window.addEventListener("pamet:registered", () => {
+    setSubmitting(document.querySelector("#registerForm"), false, "Creating account…");
+    ensureRegistrationEntry();
+    announceAccountCreated();
+  });
   rotateScene();
 })();
