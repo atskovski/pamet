@@ -261,7 +261,7 @@
               <label class="setting-row"><span class="setting-label"><svg class="icon sm" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg> Primary Care Access <span class="help" data-help="Create a secure, expiring Visit Brief link for your care team. This is sharing, not a live doctor portal.">?</span></span><input type="checkbox" class="switch" id="setPrimaryCare" /></label>
               <div class="setting-row care-access-row" id="standardVisitBriefSetting">
                 <span class="setting-label"><svg class="icon sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM14 3v5h4M9 12h6M9 16h6"/></svg> Standard Visit Brief <span class="help" data-help="Create a concise Standard Visit Brief from the health information you have recorded in Pamet. It is included with Free, Pro, and Ultra and can be viewed or downloaded as a PDF. Appointment Workspace and the Advanced Visit Brief are separate Ultra features.">?</span></span>
-                <button class="care-access-action" id="createStandardVisitBrief" type="button" data-nav="report" data-pamet-entitlement="visitBrief" data-pamet-entitlement-label="Standard Visit Brief">Create visit brief</button>
+                <button class="care-access-action" type="button" data-nav="report" data-pamet-entitlement="visitBrief" data-pamet-entitlement-label="Standard Visit Brief">Create visit brief</button>
               </div>
               <div class="feedback-setting">
                 <div class="setting-row feedback-setting-head">
@@ -272,7 +272,7 @@
                   <p>Only the category, rating, message, app version, and screen are stored. Pamet does not attach account or journal data. Please don’t include medical or account details in your message.</p>
                   <label>Category<select id="feedbackCategory" required><option value="idea">Idea</option><option value="usability">Usability</option><option value="bug">Something isn’t working</option><option value="other">Other</option></select></label>
                   <fieldset><legend>Overall experience (optional)</legend><div class="rating-row" role="radiogroup" aria-label="Overall experience"><label><input type="radio" name="feedbackRating" value="1" />1</label><label><input type="radio" name="feedbackRating" value="2" />2</label><label><input type="radio" name="feedbackRating" value="3" />3</label><label><input type="radio" name="feedbackRating" value="4" />4</label><label><input type="radio" name="feedbackRating" value="5" />5</label></div></fieldset>
-                  <label>Feedback<textarea id="feedbackMessage" maxlength="1000" minlength="10" required placeholder="What would make Pamet more useful? Please don’t include medical or account details in your message."></textarea></label>
+                  <label>Feedback<textarea id="feedbackMessage" maxlength="1000" minlength="10" required placeholder="What would make Pamet more useful? Please don’t include medical or account details."></textarea></label>
                   <div class="feedback-actions"><button class="btn btn-ghost" id="cancelFeedback" type="button">Cancel</button><button class="btn btn-primary" type="submit">Send feedback</button></div>
                 </form>
                 <p class="feedback-status" id="feedbackStatus" role="status" hidden></p>
