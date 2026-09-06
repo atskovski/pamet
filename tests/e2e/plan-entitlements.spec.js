@@ -65,4 +65,38 @@ test.describe('Pamet plan entitlement boundaries', () => {
       await expect(page.getByRole('dialog').filter({ hasText:/Pro|Ultra/i }).first()).toBeVisible();
     }
   });
+
+  test('Free exposes every Free catalog entitlement and can create a Standard Visit Brief from Settings', async ({ page }, testInfo) => {
+    await registerFreeAccount(page, testInfo);
+
+    const audit = await page.evaluate(() => {
+      const features = Array.isArray(window.PametPlanCatalog?.features) ? window.PametPlanCatalog.features : [];
+      const expected = features.filter((feature) => feature.free === true).map((feature) => feature.id);
+      return {
+        expected,
+        missing:expected.filter((feature) => !window.PametEntitlements?.has?.(feature))
+      };
+    });
+    expect(audit.expected).toContain('visitBrief');
+    expect(audit.missing).toEqual([]);
+
+    await page.locator('.tab[data-tab="settings"]').click();
+    const row = page.locator('#standardVisitBriefSetting');
+    await expect(row).toBeVisible();
+    await expect(row).toContainText('Standard Visit Brief');
+
+    const help = row.locator('.help');
+    await help.click();
+    await expect(help).toHaveClass(/show/);
+    await expect(help.locator('.tip')).toContainText('included with Free, Pro, and Ultra');
+    await expect(help.locator('.tip')).toContainText('Advanced Visit Brief');
+
+    const create = row.getByRole('button', { name:'Create visit brief', exact:true });
+    await expect(create).toBeVisible();
+    await create.click();
+
+    await expect(page.locator('#screen-report')).toHaveClass(/active/);
+    await expect(page.locator('#reportDoc')).toContainText('Symptom report');
+    await expect(page.locator('#pametEntitlementModalRoot .entitlement-lock-modal')).not.toBeVisible();
+  });
 });

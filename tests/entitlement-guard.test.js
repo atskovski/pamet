@@ -150,3 +150,19 @@ test('entitlement endpoint failure fails closed to Free', async () => {
   assert.equal(store.isUltra(), false);
   assert.deepEqual(plain(store.profiles.map((profile) => profile.id)), ['primary']);
 });
+
+test('every catalog feature marked Free stays available through the runtime entitlement guard', async () => {
+  const contract = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../contracts/plan-features.json'), 'utf8'));
+  const freeFeatures = contract.features.filter((feature) => feature.free === true).map((feature) => feature.id);
+  assert.ok(freeFeatures.includes('visitBrief'), 'Standard Visit Brief must remain in the canonical Free feature set');
+
+  const verified = harness({ plan:'free' });
+  await settle(verified.window);
+  assert.deepEqual(freeFeatures.filter((feature) => !verified.window.PametEntitlements.has(feature)), []);
+  assert.equal(verified.store.hasEntitlement('visitBrief'), true);
+
+  const unavailableServer = harness({ plan:'free', status:503 });
+  await settle(unavailableServer.window);
+  assert.equal(unavailableServer.window.PametEntitlements.snapshot().verified, false);
+  assert.deepEqual(freeFeatures.filter((feature) => !unavailableServer.window.PametEntitlements.has(feature)), [], 'Free features must not depend on paid-plan verification');
+});
