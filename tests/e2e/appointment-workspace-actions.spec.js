@@ -16,7 +16,9 @@ async function ready(page){
 
 test('@production Upcoming and saved visits can be edited and removed in place',async({page})=>{
   const firstId='123e4567-e89b-42d3-a456-426614174111';
+  const updatedId='123e4567-e89b-42d3-a456-426614174222';
   let appointments=[{id:firstId,profileId:'primary',clinician:'Dr. Rivera',startsAt:'2026-09-18T16:30:00.000Z',reason:'Primary care — Original headache review',questions:['What changed?'],reminderMinutes:1440,status:'scheduled'}];
+  let postCount=0;
   const deleted=[];
 
   const appointmentsRoute=async route=>{
@@ -27,6 +29,11 @@ test('@production Upcoming and saved visits can be edited and removed in place',
     if(method==='DELETE'&&suffix){
       deleted.push(suffix);appointments=appointments.filter(item=>item.id!==suffix);
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({deleted:true})});
+    }
+    if(method==='POST'){
+      const body=request.postDataJSON();postCount+=1;
+      const created={id:updatedId,...body,status:'scheduled'};appointments.push(created);
+      return route.fulfill({status:201,contentType:'application/json',body:JSON.stringify({id:created.id,saved:true})});
     }
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({appointments})});
   };
@@ -49,12 +56,15 @@ test('@production Upcoming and saved visits can be edited and removed in place',
   await page.locator('#careSaveAppointment').click();
 
   await expect(page.locator('[data-care-save-status]')).toContainText('Saved visit updated');
+  await expect.poll(()=>postCount).toBe(1);
   await expect.poll(()=>deleted.includes(firstId)).toBe(true);
+  await expect.poll(()=>appointments.length).toBe(1);
   await expect(list).toContainText('Updated migraine review');
   await expect(list).not.toContainText('Original headache review');
 
   page.once('dialog',dialog=>dialog.accept());
   await list.getByRole('button',{name:'Remove'}).click();
+  await expect.poll(()=>deleted.includes(updatedId)).toBe(true);
   await expect(page.locator('[data-care-save-status]')).toContainText('Saved visit removed');
   await expect(list).toContainText('No visits saved yet');
 });
