@@ -9,8 +9,10 @@ const securityUi = fs.readFileSync('js/security.js', 'utf8');
 const authUi = fs.readFileSync('js/auth.js', 'utf8');
 const accountSwitch = fs.readFileSync('js/account-switch.js', 'utf8');
 const feedbackUi = fs.readFileSync('js/feedback.js', 'utf8');
+const productClarity = fs.readFileSync('js/product-clarity.js', 'utf8');
 const releaseCss = fs.readFileSync('css/login-experience.css', 'utf8');
 const mobileCss = fs.readFileSync('css/mobile.css', 'utf8');
+const logExperienceCss = fs.readFileSync('css/log-experience.css', 'utf8');
 const secureServer = fs.readFileSync('secure-server.js', 'utf8');
 const edgeAccount = fs.readFileSync('lib/edge-account.js', 'utf8');
 const qrSource = fs.readFileSync('js/qr-sharing.js', 'utf8');
@@ -98,6 +100,19 @@ test('mobile layout covers safe areas, narrow phones, and input zoom prevention'
   assert.match(mobileCss, /font-size:16px!important/);
   assert.match(mobileCss, /\.app-shell[\s\S]*width:100vw!important/);
   assert.match(mobileCss, /orientation:landscape/);
+});
+
+test('logging milestone hero scales only for phone-class touch layouts', () => {
+  assert.match(logExperienceCss, /hover:none/);
+  assert.match(logExperienceCss, /pointer:coarse/);
+  assert.match(logExperienceCss, /max-height:620px/);
+  assert.match(logExperienceCss, /\.logging-current-tier\{display:grid;border:0;padding:0\}/);
+  assert.match(logExperienceCss, /\.logging-current-badge\{zoom:\.55\}/);
+});
+
+test('profile shortcut renders its final static registry icon without a hydration swap', () => {
+  assert.match(productClarity, /button\.innerHTML = window\.PametIcons\.svg\('profiles'\)/);
+  assert.doesNotMatch(productClarity, /PROFILE_ICON/);
 });
 
 test('script and style CSP no longer permit unsafe inline execution or attributes', () => {

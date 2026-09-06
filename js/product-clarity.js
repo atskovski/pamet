@@ -5,7 +5,6 @@
   if (!S) return;
   const $ = (selector, root = document) => root.querySelector(selector);
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  const PROFILE_ICON = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 19c.8-4 3-6 6.2-6s5.4 2 6.2 6"/><circle cx="18" cy="9" r="2.4"/><path d="M15.8 14.2c2.9-.4 4.8 1.2 5.4 4.3"/></svg>';
 
   function closeProfileMenu() { $('#quickProfileRoot')?.remove(); }
   function switchProfile(profileId) {
@@ -50,7 +49,7 @@
     button.className = 'icon-btn profile-icon-btn';
     button.title = 'Switch profile';
     button.setAttribute('aria-label', `Switch profile. Currently ${S.activeProfile.name}`);
-    button.innerHTML = PROFILE_ICON + `<span class="profile-icon-dot">${S.profiles.length}</span>`;
+    button.innerHTML = window.PametIcons.svg('profiles') + `<span class="profile-icon-dot">${S.profiles.length}</span>`;
     button.hidden = S.profiles.length < 2;
     button.addEventListener('click', openProfileMenu);
     if (theme) {
