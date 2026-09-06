@@ -12,6 +12,7 @@ async function ready(page){
   await page.goto('/',{waitUntil:'commit'});
   await page.waitForFunction(()=>window.PametAuthenticatedFeaturesLoaded===true&&!!window.PametVisitWorkflowLoader&&!!window.PametCareUx);
   await expect.poll(()=>page.evaluate(()=>window.PametEntitlements?.snapshot?.().plan)).toBe('ultra');
+  await page.evaluate(()=>window.PametVisitWorkflowLoader.loadAppointmentActions());
 }
 
 test('@production Upcoming and saved visits can be edited and removed in place',async({page})=>{
