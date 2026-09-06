@@ -21,7 +21,7 @@ test('@production Upcoming and saved visits can be edited and removed in place',
   let postCount=0;
   const deleted=[];
 
-  await page.route('**/api/appointments*',async route=>{
+  await page.route('**/api/appointments**',async route=>{
     const request=route.request();
     const url=new URL(request.url());
     const method=request.method();
