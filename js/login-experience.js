@@ -44,44 +44,39 @@
     if (secure && A?.isSecure) secure.textContent = "🔒 Sign-in uses a secure session. Pamet does not save your plain-text password in the browser.";
   }
 
+  function moveAuthError(form) {
+    let error = document.querySelector("#welcome .form-error");
+    if (!error) {
+      error = document.createElement("p");
+      error.className = "form-error";
+      error.setAttribute("role", "alert");
+    }
+    const help = error.nextElementSibling?.classList.contains("pamet-troubleshoot-link") ? error.nextElementSibling : null;
+    form.insertBefore(error, form.querySelector('button[type="submit"]'));
+    if (help) error.insertAdjacentElement("afterend", help);
+    error.textContent = "";
+    error.hidden = true;
+  }
+
   function ensureRegistrationEntry() {
     const loginForm = document.querySelector("#loginForm");
     const registerForm = document.querySelector("#registerForm");
-    if (!loginForm || !registerForm) return;
+    const switcher = loginForm?.querySelector(".welcome-switch");
+    const createLink = loginForm?.querySelector("#showRegister");
+    if (!loginForm || !registerForm || !switcher || !createLink) return;
 
-    let switcher = loginForm.querySelector(".welcome-switch");
-    let createLink = loginForm.querySelector("#showRegister");
-
-    if (!switcher) {
-      switcher = document.createElement("p");
-      switcher.className = "welcome-switch";
-      const submit = loginForm.querySelector('button[type="submit"]');
-      if (submit) submit.insertAdjacentElement("afterend", switcher);
-      else loginForm.appendChild(switcher);
-    }
-
-    if (!createLink) {
-      switcher.textContent = "Don’t have an account? ";
-      createLink = document.createElement("a");
-      createLink.href = "#";
-      createLink.id = "showRegister";
-      createLink.textContent = "Create an account";
-      switcher.appendChild(createLink);
-      createLink.addEventListener("click", (event) => {
-        event.preventDefault();
-        registerForm.reset();
-        loginForm.hidden = true;
-        registerForm.hidden = false;
-      });
-    } else {
-      createLink.textContent = "Create an account";
-    }
-
-    switcher.hidden = false;
-    switcher.removeAttribute("hidden");
-    createLink.hidden = false;
-    createLink.removeAttribute("hidden");
+    createLink.textContent = "Create an account";
     createLink.setAttribute("aria-label", "Create a new Pamet account");
+    const hasSavedAccount = !!A?.hasAccount?.();
+    switcher.hidden = hasSavedAccount;
+    createLink.hidden = hasSavedAccount;
+    moveAuthError(loginForm);
+
+    if (createLink.dataset.pametAuthTarget !== "true") {
+      createLink.dataset.pametAuthTarget = "true";
+      createLink.addEventListener("click", () => queueMicrotask(() => moveAuthError(registerForm)));
+      registerForm.querySelector("#showLogin")?.addEventListener("click", () => queueMicrotask(() => moveAuthError(loginForm)));
+    }
     ensureRememberMe();
   }
 
@@ -104,9 +99,10 @@
     ensureRegistrationEntry();
   }
 
-  ensureRegistrationEntry();
-  queueMicrotask(ensureRegistrationEntry);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensureRegistrationEntry, { once: true });
   window.addEventListener("pageshow", ensureRegistrationEntry);
   window.addEventListener("pamet:logout", rotateScene);
+  window.addEventListener("pamet:logout-all", ensureRegistrationEntry);
+  window.addEventListener("pamet:account-deleted", ensureRegistrationEntry);
   rotateScene();
 })();

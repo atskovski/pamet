@@ -252,14 +252,15 @@ test.describe('Pamet UI integrity', () => {
     expect(seen.size, 'the audit should inventory a meaningful set of controls').toBeGreaterThan(15);
   });
 
-  test('logout has a clear return path to login and account creation', async ({ page }, testInfo) => {
+  test('logout returns a saved account to login without offering duplicate account creation', async ({ page }, testInfo) => {
     await registerDisposableAccount(page, testInfo);
     await page.locator('.tab[data-tab="settings"]').click();
     const logout = page.locator('#logoutBtn');
     await expect(logout).toBeVisible();
     await logout.click();
     await expect(page.locator('#loginForm')).toBeVisible();
-    await expect(page.locator('#showRegister')).toBeVisible();
+    await expect(page.locator('#showRegister')).toBeHidden();
+    await expect(page.locator('#switchLocalAccount')).toBeVisible();
   });
 
   test('@production public shell and synthetic-session primary navigation smoke', async ({ page }) => {
