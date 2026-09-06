@@ -106,8 +106,8 @@ test('logging milestone hero scales only for phone-class touch layouts', () => {
   assert.match(logExperienceCss, /hover:none/);
   assert.match(logExperienceCss, /pointer:coarse/);
   assert.match(logExperienceCss, /max-height:620px/);
-  assert.match(logExperienceCss, /\.logging-current-tier\{display:grid;border:0;background:none;padding:0\}/);
-  assert.match(logExperienceCss, /\.logging-current-badge\{width:4rem\}/);
+  assert.match(logExperienceCss, /\.logging-current-tier\{display:grid;border:0;padding:0\}/);
+  assert.match(logExperienceCss, /\.logging-current-badge\{zoom:\.55\}/);
 });
 
 test('profile shortcut renders its final static registry icon without a hydration swap', () => {
