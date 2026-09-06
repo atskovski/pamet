@@ -38,6 +38,9 @@
     const text=String(value||'');const type=types.find(item=>text===item||text.startsWith(`${item} — `))||'Primary care';
     return {type,reason:text===type?'':text.startsWith(`${type} — `)?text.slice(type.length+3):text};
   }
+  function appointmentPayload(item){
+    return {profileId:item.profileId||profileId(),clinician:item.clinician||'Appointment',startsAt:item.startsAt,reason:item.reason||'',concerns:[],questions:Array.isArray(item.questions)?item.questions:[],reminderMinutes:Number(item.reminderMinutes||1440)};
+  }
   async function getItem(localId){
     const local=readLocal().find(item=>String(item.localId)===String(localId));
     if(local)return local;
@@ -61,11 +64,24 @@
     purge(localId,serverId);
     [650,1700].forEach(delay=>setTimeout(()=>purge(localId,serverId),delay));
   }
+  async function resyncReplacement(replacement){
+    if(!replacement)return;
+    const pending={...replacement};delete pending.serverId;
+    writeLocal(readLocal().map(value=>String(value.localId)===String(pending.localId)?pending:value));
+    try{
+      const created=await api('/api/appointments',{method:'POST',body:JSON.stringify(appointmentPayload(pending))});
+      if(created?.id)writeLocal(readLocal().map(value=>String(value.localId)===String(pending.localId)?{...value,serverId:created.id}:value));
+    }catch{}
+  }
   async function removeSavedVisit(localId,{afterEdit=false}={}){
     const item=await getItem(localId);if(!item)return false;
     const serverId=item.serverId||item.id||'';
+    const replacement=afterEdit&&serverId?readLocal().find(value=>String(value.localId)!==String(localId)&&String(value.serverId||'')===String(serverId)):null;
     if(serverId)await api(`/api/appointments/${encodeURIComponent(serverId)}`,{method:'DELETE'});
-    settleRemoval(localId,serverId);
+    if(replacement){
+      await resyncReplacement(replacement);
+      settleRemoval(localId);
+    }else settleRemoval(localId,serverId);
     if(!afterEdit)setStatus('Saved visit removed.','success');
     return true;
   }
@@ -120,7 +136,7 @@
     event.preventDefault();
     if(!window.confirm('Remove this saved visit from Pamet?'))return;
     remove.disabled=true;
-    removeSavedVisit(remove.dataset.savedVisitRemove).catch(error=>{remove.disabled=false;setStatus(error.message||'The saved visit could not be removed.','error')});
+    removeSavedVisit(remove.dataset.savedVisitRemove).then(removed=>{if(!removed){remove.disabled=false;setStatus('This saved visit could not be found. Refresh the workspace and try again.','error')}}).catch(error=>{remove.disabled=false;setStatus(error.message||'The saved visit could not be removed.','error')});
   },true);
 
   installStyles();
