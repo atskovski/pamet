@@ -28,14 +28,5 @@ import "./ui-ux.js";
 import "./care-sharing-enhancements.js";
 import "./caregiver-pdf-fallback.js";
 
-const settingsTab = document.querySelector('.tab[data-tab="settings"]');
-settingsTab?.addEventListener('click', () => {
-  if (window.PametFreePlanAccess || document.querySelector('script[data-pamet-free-plan-access]')) return;
-  const script = document.createElement('script');
-  script.src = 'js/free-plan-access.js?v=169';
-  script.dataset.pametFreePlanAccess = 'true';
-  document.head.appendChild(script);
-}, { once:true });
-
 window.PametAuthenticatedFeaturesLoaded = true;
 window.dispatchEvent(new CustomEvent("pamet:authenticated-features-ready"));
