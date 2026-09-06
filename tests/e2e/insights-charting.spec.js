@@ -155,8 +155,8 @@ test('@production Pro Patterns charting uses glanceable Basic summaries and cont
   await expect(chart.locator('[data-chart-metric="frequency"]')).toHaveCount(0);
   await expect(chart.locator('.insights-chart-svg')).toBeVisible();
   await expect(chart.locator('.chart-reference-band')).toBeVisible();
-  await expect(chart.locator('.chart-reference-label-bg')).toBeVisible();
-  await expect(chart.locator('.chart-reference-label')).toHaveAttribute('y','18');
+  await expect(chart.locator('.chart-reference-label-bg')).toHaveCount(0);
+  await expect(chart.locator('.chart-reference-label')).toHaveCount(0);
   await expectActiveControlVisible(chart.locator('[data-chart-mode="advanced"]'));
   await expectActiveControlVisible(chart.locator('[data-chart-type="line"]'));
   await expectPrimarySeriesVisible(chart);
