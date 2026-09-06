@@ -68,11 +68,11 @@
     );
 
     // Keep the typical-range label in the chart's reserved top margin rather
-    // than inside the plotted data. The small surfaced badge stays readable
-    // over both line and bar views without covering recorded values.
+    // than inside the plotted data. The surfaced badge stays readable over
+    // both line and bar views without covering recorded values.
     output = output.replace(
       /<text class="chart-reference-label" x="[^"]+" y="[^"]+">Typical range in this window<\/text>/g,
-      '<rect class="chart-reference-label-bg" x="86" y="5" width="174" height="19" rx="9.5" fill="var(--surface,#fff)" stroke="var(--pamet-sage,#6F8F7D)" stroke-opacity=".72" aria-hidden="true"/><text class="chart-reference-label" x="95" y="18" fill="var(--text-primary,#243536)" opacity="1">Typical range in this window</text>'
+      '<rect class="chart-reference-label-bg" x="86" y="4" width="176" height="20" rx="10" fill="var(--surface,#fff)" stroke="var(--pamet-sage,#6F8F7D)" stroke-opacity=".78" aria-hidden="true"/><text class="chart-reference-label-prominent" x="95" y="18" fill="var(--text-primary,#243536)" font-size="10.5" font-weight="800">Typical range in this window</text>'
     );
     return output;
   }
