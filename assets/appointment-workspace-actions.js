@@ -11,9 +11,7 @@
 
   function installStyles(){
     if($('#pametSavedVisitActionStyles'))return;
-    const style=document.createElement('style');style.id='pametSavedVisitActionStyles';
-    style.textContent='.care-saved-manage{grid-column:1/-1;display:flex;align-items:center;justify-content:flex-end;gap:5px;min-height:18px;margin-bottom:1px;color:var(--text-secondary);font-size:11px;line-height:1}.care-saved-manage-btn{appearance:none;border:0;background:transparent;color:var(--brand-primary,#0f3d3e);font:inherit;font-weight:800;line-height:1;padding:3px 0;cursor:pointer}.care-saved-manage-btn:hover{text-decoration:underline;text-underline-offset:2px}.care-saved-manage-btn.danger{color:var(--rose,#9b4850)}.care-saved-manage-btn:focus-visible{outline:2px solid var(--brand-primary,#0f3d3e);outline-offset:2px;border-radius:3px}@media(max-width:560px){.care-saved-manage{justify-content:flex-start}}';
-    document.head.appendChild(style);
+    const link=document.createElement('link');link.id='pametSavedVisitActionStyles';link.rel='stylesheet';link.href='/assets/appointment-workspace-actions.css?v=1695-visit-actions1';document.head.appendChild(link);
   }
 
   async function api(path,options={}){
