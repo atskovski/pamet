@@ -26,6 +26,7 @@ import "./visit-workflow-loader.js";
 import "./advanced-visit-brief.js";
 import "./ui-ux.js";
 import "./care-sharing-enhancements.js";
+import "./free-plan-access.js";
 import "./caregiver-pdf-fallback.js";
 
 window.PametAuthenticatedFeaturesLoaded = true;
