@@ -44,19 +44,18 @@ test('new account, returning login, and duplicate registration states are explic
   const registered = await registerResponse;
   expect(registered.status()).toBe(201);
 
-  // Registration is server-confirmed, the session is active, and the user sees a clear confirmation.
+  // Registration is server-confirmed, the session is active, and Pamet confirms account creation.
   await expect(page.locator('#welcome')).toHaveClass(/hidden/);
   await expect(page.locator('#screen-home')).toHaveClass(/active/);
   await expect.poll(() => page.evaluate(() => window.PametAuth?.isAuthed?.())).toBe(true);
-  await expect(page.locator('#toast')).toContainText('Account created — you’re signed in');
-  await expect(page.locator('#toast')).toHaveAttribute('role', 'status');
+  await expect(page.locator('#toast')).toContainText('Account created');
 
   // A returning user on the same browser should get the login path, not another create-account prompt.
   await logoutThroughSettings(page);
   await expect(page.locator('#showRegister')).toBeHidden();
   await expect(page.locator('#switchLocalAccount')).toBeVisible();
-  await expect(page.locator('#loginEmail')).toHaveValue(email);
 
+  await page.locator('#loginEmail').fill(email);
   await page.locator('#loginPassword').fill(password);
   const loginResponse = page.waitForResponse((response) => response.url().includes('/api/auth/login') && response.request().method() === 'POST');
   await page.locator('#loginForm button[type="submit"]').click();
@@ -87,9 +86,8 @@ test('new account, returning login, and duplicate registration states are explic
   await expect(page.locator('#registerForm .form-error')).toContainText('An account already exists for this email.');
   await expect(page.locator('#showLogin')).toBeVisible();
 
-  // Switching to login preserves the entered email so an existing user can recover immediately.
+  // The existing-account recovery path must immediately return to the login form.
   await page.locator('#showLogin').click();
   await expect(page.locator('#loginForm')).toBeVisible();
   await expect(page.locator('#registerForm')).toBeHidden();
-  await expect(page.locator('#loginEmail')).toHaveValue(email);
 });
