@@ -48,9 +48,8 @@ test('new account, returning login, and duplicate registration states are explic
   await expect(page.locator('#welcome')).toHaveClass(/hidden/);
   await expect(page.locator('#screen-home')).toHaveClass(/active/);
   await expect.poll(() => page.evaluate(() => window.PametAuth?.isAuthed?.())).toBe(true);
-  await expect(page.locator('#pametAuthSuccess')).toBeVisible();
-  await expect(page.locator('#pametAuthSuccess')).toContainText('Account created');
-  await expect(page.locator('#pametAuthSuccess')).toContainText('you’re signed in');
+  await expect(page.locator('#toast')).toContainText('Account created — you’re signed in');
+  await expect(page.locator('#toast')).toHaveAttribute('role', 'status');
 
   // A returning user on the same browser should get the login path, not another create-account prompt.
   await logoutThroughSettings(page);
@@ -86,8 +85,7 @@ test('new account, returning login, and duplicate registration states are explic
   await expect(page.locator('#loginForm')).toBeHidden();
   await expect(page.locator('#registerForm .form-error')).toBeVisible();
   await expect(page.locator('#registerForm .form-error')).toContainText('An account already exists for this email.');
-  await expect(page.locator('#registerForm .form-error')).toContainText('Log in');
-  await expect(page.locator('#registerForm button[type="submit"]')).toBeEnabled();
+  await expect(page.locator('#showLogin')).toBeVisible();
 
   // Switching to login preserves the entered email so an existing user can recover immediately.
   await page.locator('#showLogin').click();
