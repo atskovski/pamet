@@ -72,7 +72,7 @@
     // both line and bar views without covering recorded values.
     output = output.replace(
       /<text class="chart-reference-label" x="[^"]+" y="[^"]+">Typical range in this window<\/text>/g,
-      '<rect class="chart-reference-label-bg" x="86" y="4" width="176" height="20" rx="10" fill="var(--surface,#fff)" stroke="var(--pamet-sage,#6F8F7D)" stroke-opacity=".78" aria-hidden="true"/><text class="chart-reference-label-prominent" x="95" y="18" fill="var(--text-primary,#243536)" font-size="10.5" font-weight="800">Typical range in this window</text>'
+      '<rect class="chart-reference-label-bg" x="86" y="4" width="176" height="20" rx="10" fill="var(--surface,#fff)" stroke="var(--pamet-sage,#6F8F7D)" stroke-opacity=".78" aria-hidden="true"/><text class="chart-reference-label chart-reference-label-prominent" x="95" y="18" fill="var(--text-primary,#243536)" stroke="var(--surface,#fff)" stroke-width="1.5" paint-order="stroke fill">Typical range in this window</text>'
     );
     return output;
   }
