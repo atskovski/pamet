@@ -113,7 +113,10 @@ test('@production Pro Insights supports every 7–365 day history window with ex
     await expect(chart).toHaveAttribute('data-chart-bucket-days', '1');
     await expect(chart).toHaveAttribute('data-chart-point-count', String(days));
     await expect(chart.locator('.coverage-day')).toHaveCount(days);
-    await expect(chart.locator('.insights-chart-svg')).toBeVisible();
+    await expect(chart).toHaveAttribute('data-chart-mode-current', 'basic');
+    await expect(chart.locator('.basic-metric-card')).toHaveCount(5);
+    await expect(chart.locator('.basic-sparkline')).toHaveCount(5);
+    await expect(chart.locator('.insights-chart-svg')).toHaveCount(0);
   }
 
   const windowLayout = await page.locator('#screen-patterns .insights-window').evaluate((element) => ({

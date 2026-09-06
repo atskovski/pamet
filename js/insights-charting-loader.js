@@ -3,7 +3,7 @@
   'use strict';
 
   if (global.PametInsightsChartingLoader) return;
-  const ASSET_REVISION = '1695-chart2';
+  const ASSET_REVISION = '1695-chart3';
   let pending = null;
   let engine = null;
 
