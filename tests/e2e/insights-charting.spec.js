@@ -88,7 +88,17 @@ async function expectPrimarySeriesVisible(chart) {
   expect(stroke).not.toBe('rgba(0, 0, 0, 0)');
 }
 
-test('@production Pro Patterns charting renders every selected daily window, offers visible line/bar controls, and preserves advanced comparisons', async ({ page }, testInfo) => {
+async function expectBasicSummaryVisible(chart) {
+  await expect(chart.locator('.chart-summary-sparklines')).toBeVisible();
+  await expect(chart.locator('.basic-metric-card')).toHaveCount(5);
+  for (const metric of ['frequency','severity','sleep','stress','hydration']) {
+    await expect(chart.locator(`[data-basic-metric="${metric}"]`)).toBeVisible();
+  }
+  await expect(chart.locator('.basic-sparkline')).toHaveCount(5);
+  await expect(chart.locator('.insights-chart-svg')).toHaveCount(0);
+}
+
+test('@production Pro Patterns charting uses glanceable Basic summaries and contextual Advanced analysis across every daily window', async ({ page }, testInfo) => {
   await installProSession(page, testInfo);
   await seedChartHistory(page);
   await page.locator('[data-tab="patterns"]').click();
@@ -100,13 +110,10 @@ test('@production Pro Patterns charting renders every selected daily window, off
   await expect(chart).toHaveAttribute('data-chart-bucket-days','1');
   await expect(chart).toHaveAttribute('data-chart-point-count','7');
   await expect(chart).toHaveAttribute('data-chart-type-current','line');
-  await expect(chart.locator('.insights-chart-svg')).toBeVisible();
-  await expect(chart.locator('.chart-summary-grid')).toBeVisible();
+  await expect(chart.locator('#insightsChartTitle')).toContainText('at a glance');
+  await expectBasicSummaryVisible(chart);
   await expect(chart.locator('.chart-method-note')).toContainText('Missing days remain missing');
   await expect(chart.locator('.chart-method-note')).toContainText('rolling average never changes the Y-axis scale');
-  await expect(chart.locator('.chart-axis-title-y')).toHaveText('Frequency (%)');
-  await expect(chart.locator('.chart-axis-title-x')).toContainText('7 calendar days');
-  await expectPrimarySeriesVisible(chart);
   await expectActiveControlVisible(chart.locator('[data-chart-mode="basic"]'));
   await expectActiveControlVisible(chart.locator('[data-chart-type="line"]'));
 
@@ -123,36 +130,47 @@ test('@production Pro Patterns charting renders every selected daily window, off
     await expect(chart.locator('.chart-window-explain')).toContainText(`${days} calendar days · daily resolution`);
     await expect(chart.locator('.chart-window-explain')).not.toContainText('grouped view');
     await expect(chart.locator('.coverage-day')).toHaveCount(days);
-    await expectPrimarySeriesVisible(chart);
+    await expectBasicSummaryVisible(chart);
   }
 
   await page.locator('[data-insights-days="30"]').click();
   await chart.locator('[data-chart-type="bar"]').click();
   await expect(chart).toHaveAttribute('data-chart-type-current','bar');
   await expectActiveControlVisible(chart.locator('[data-chart-type="bar"]'));
-  expect(await chart.locator('.chart-bar').count()).toBeGreaterThan(0);
-  const barFill = await chart.locator('.chart-bar').first().evaluate((element) => getComputedStyle(element).fill);
-  expect(barFill).not.toBe('none');
-  expect(barFill).not.toBe('transparent');
-  await expect(chart.locator('.chart-series-trend')).toHaveAttribute('d', /^M/);
+  expect(await chart.locator('.basic-sparkline rect').count()).toBeGreaterThan(0);
 
   await chart.locator('[data-chart-type="line"]').click();
   await expect(chart).toHaveAttribute('data-chart-type-current','line');
   await expectActiveControlVisible(chart.locator('[data-chart-type="line"]'));
-  await expectPrimarySeriesVisible(chart);
+  expect(await chart.locator('.basic-sparkline path').count()).toBeGreaterThan(0);
 
   await chart.locator('[data-chart-mode="advanced"]').click();
   await expect(chart).toHaveAttribute('data-chart-mode-current','advanced');
   await expect(chart.locator('.advanced-chart-controls')).toBeVisible();
   await expect(chart.locator('.advanced-comparison-grid .advanced-comparison-card')).toHaveCount(3);
+  await expect(chart.locator('.comparison-delta-track')).toHaveCount(3);
+  await expect(chart.locator('.comparison-delta-svg')).toHaveCount(3);
   await expect(chart.locator('.chart-metric-btn')).toHaveCount(5);
+  await expect(chart.locator('.insights-chart-svg')).toBeVisible();
+  await expect(chart.locator('.chart-reference-band')).toBeVisible();
   await expectActiveControlVisible(chart.locator('[data-chart-mode="advanced"]'));
+  await expectActiveControlVisible(chart.locator('[data-chart-type="line"]'));
+  await expectPrimarySeriesVisible(chart);
 
   await chart.locator('[data-chart-metric="severity"]').click();
   await expect(chart.locator('#insightsChartTitle')).toHaveText('Recorded symptom severity');
   await expectActiveControlVisible(chart.locator('[data-chart-metric="severity"]'));
   await expectPrimarySeriesVisible(chart);
   await expect(chart.locator('.chart-axis-title-y')).toHaveText('Severity (0–10)');
+  await expect(chart.locator('.insights-chart-svg-wrap')).toHaveAttribute('data-y-axis-zoomed','true');
+  await expect(chart.locator('.chart-reference-band')).toBeVisible();
+
+  await chart.locator('[data-chart-type="bar"]').click();
+  await expectActiveControlVisible(chart.locator('[data-chart-type="bar"]'));
+  await expect(chart.locator('.insights-chart-svg-wrap')).toHaveAttribute('data-y-axis-zoomed','false');
+  expect(await chart.locator('.chart-bar').count()).toBeGreaterThan(0);
+  await chart.locator('[data-chart-type="line"]').click();
+  await expectActiveControlVisible(chart.locator('[data-chart-type="line"]'));
 
   await chart.locator('[data-chart-metric="sleep"]').click();
   await expect(chart.locator('#insightsChartTitle')).toHaveText('Recorded sleep');
