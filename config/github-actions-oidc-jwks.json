@@ -1,6 +1,6 @@
 {
   "source": "https://token.actions.githubusercontent.com/.well-known/jwks",
-  "refreshedAt": "2026-09-05T10:35:33.976Z",
+  "refreshedAt": "2026-09-06T10:56:26.314Z",
   "keys": [
     {
       "kty": "RSA",
