@@ -91,9 +91,10 @@ async function expectPrimarySeriesVisible(chart) {
 async function expectBasicSummaryVisible(chart) {
   await expect(chart.locator('.chart-summary-sparklines')).toBeVisible();
   await expect(chart.locator('.basic-metric-card')).toHaveCount(5);
-  for (const metric of ['frequency','severity','sleep','stress','hydration']) {
+  for (const metric of ['symptom-days','severity','sleep','stress','hydration']) {
     await expect(chart.locator(`[data-basic-metric="${metric}"]`)).toBeVisible();
   }
+  await expect(chart.locator('[data-basic-metric="symptom-days"]')).toContainText('Count only · no graph');
   await expect(chart.locator('.basic-sparkline')).toHaveCount(5);
   await expect(chart.locator('.insights-chart-svg')).toHaveCount(0);
 }
@@ -150,9 +151,12 @@ test('@production Pro Patterns charting uses glanceable Basic summaries and cont
   await expect(chart.locator('.advanced-comparison-grid .advanced-comparison-card')).toHaveCount(3);
   await expect(chart.locator('.comparison-delta-track')).toHaveCount(3);
   await expect(chart.locator('.comparison-delta-svg')).toHaveCount(3);
-  await expect(chart.locator('.chart-metric-btn')).toHaveCount(5);
+  await expect(chart.locator('.chart-metric-btn')).toHaveCount(4);
+  await expect(chart.locator('[data-chart-metric="frequency"]')).toHaveCount(0);
   await expect(chart.locator('.insights-chart-svg')).toBeVisible();
   await expect(chart.locator('.chart-reference-band')).toBeVisible();
+  await expect(chart.locator('.chart-reference-label-bg')).toBeVisible();
+  await expect(chart.locator('.chart-reference-label')).toHaveAttribute('y','18');
   await expectActiveControlVisible(chart.locator('[data-chart-mode="advanced"]'));
   await expectActiveControlVisible(chart.locator('[data-chart-type="line"]'));
   await expectPrimarySeriesVisible(chart);
@@ -186,7 +190,7 @@ test('@production Pro Patterns charting uses glanceable Basic summaries and cont
   await expect(chart.locator('.advanced-comparison-head h4')).toContainText('Headache days compared with other logged days');
   await expect(chart.locator('.chart-series-secondary')).toHaveAttribute('d', /^M/);
 
-  for (const metric of ['stress','hydration','frequency','severity']) {
+  for (const metric of ['stress','hydration','severity']) {
     await chart.locator(`[data-chart-metric="${metric}"]`).click();
     await expectActiveControlVisible(chart.locator(`[data-chart-metric="${metric}"]`));
     await expectPrimarySeriesVisible(chart);

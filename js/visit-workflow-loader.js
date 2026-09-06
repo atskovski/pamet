@@ -2,7 +2,7 @@
 (()=>{
   'use strict';
   if(window.PametVisitWorkflowLoader)return;
-  let pending=null;
+  let pending=null,actionsStarted=false;
 
   function labelVisitSequence(){
     const prep=document.querySelector('[data-phase2="prep"]');
@@ -33,6 +33,20 @@
     return pending;
   }
 
+  function ensureAppointmentActions(){
+    if(actionsStarted||window.PametAppointmentWorkspaceActions)return;
+    actionsStarted=true;
+    const script=document.createElement('script');
+    script.src='/assets/appointment-workspace-actions.js?v=1695-visit-actions1';
+    script.async=true;
+    document.head.appendChild(script);
+  }
+
+  function handleModalChanges(){
+    closeSavedAppointmentWorkspace();
+    if(document.querySelector('#careAppointmentList'))ensureAppointmentActions();
+  }
+
   window.PametVisitWorkflowLoader={load,labelVisitSequence};
   document.addEventListener('pamet:settings-rendered',labelVisitSequence);
   document.addEventListener('click',event=>{
@@ -48,8 +62,8 @@
     if(event.target.closest?.('[data-nav="report"],[data-phase2="prep"]'))load().catch(()=>{});
   },true);
 
-  const modalObserver=new MutationObserver(closeSavedAppointmentWorkspace);
+  const modalObserver=new MutationObserver(handleModalChanges);
   modalObserver.observe(document.body,{childList:true,subtree:true});
   labelVisitSequence();
-  closeSavedAppointmentWorkspace();
+  handleModalChanges();
 })();

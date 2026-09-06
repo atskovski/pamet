@@ -3,9 +3,10 @@
   'use strict';
 
   if (global.PametInsightsChartingLoader) return;
-  const ASSET_REVISION = '1695-chart3';
+  const ASSET_REVISION = '1695-chart4';
   let pending = null;
   let engine = null;
+  let presentationPending = null;
 
   // The production chart engine now preserves one slot for every calendar day.
   // Keep the loading shell aligned with that contract so users never see stale
@@ -52,6 +53,23 @@
     });
   }
 
+  function loadPresentation() {
+    if (global.PametInsightsChartPresentation) return Promise.resolve();
+    if (presentationPending) return presentationPending;
+    presentationPending = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = `/assets/insights-chart-presentation.js?v=${ASSET_REVISION}`;
+      script.async = true;
+      script.addEventListener('load', () => global.PametInsightsChartPresentation ? resolve() : reject(new Error('Insights chart presentation did not initialize.')), { once:true });
+      script.addEventListener('error', () => reject(new Error('Insights chart presentation could not be loaded.')), { once:true });
+      document.head.appendChild(script);
+    }).catch((error) => {
+      presentationPending = null;
+      throw error;
+    });
+    return presentationPending;
+  }
+
   function loadScript() {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
@@ -73,9 +91,9 @@
   }
 
   function load() {
-    if (engine) return Promise.resolve(proxy);
+    if (engine && global.PametInsightsChartPresentation) return Promise.resolve(proxy);
     if (pending) return pending;
-    pending = Promise.all([loadStyles(), loadScript()])
+    pending = Promise.all([loadStyles(), loadPresentation(), loadScript()])
       .then(() => {
         requestAnimationFrame(() => global.PametInsightsController?.render?.());
         return proxy;
@@ -89,7 +107,10 @@
 
   const proxy = Object.freeze({
     render(options) {
-      if (engine) return engine.render(options);
+      if (engine && global.PametInsightsChartPresentation) {
+        const presentation = global.PametInsightsChartPresentation;
+        return presentation.improve(engine.render(presentation.normalize(options)), options);
+      }
       load().catch(() => {});
       return loadingMarkup(options);
     },
@@ -100,7 +121,7 @@
       return engine?.comparison?.(...args) || { selectedDays:0, baselineDays:0, factors:[], sufficient:false };
     },
     metrics() {
-      return engine?.metrics?.() || ['frequency','severity','sleep','stress','hydration'];
+      return (engine?.metrics?.() || ['frequency','severity','sleep','stress','hydration']).filter((metric) => metric !== 'frequency');
     },
     bucketWidthFor(days) {
       return engine?.bucketWidthFor?.(days) || bucketWidthFor(Number(days || 7));
